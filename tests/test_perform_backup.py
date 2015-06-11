@@ -73,7 +73,7 @@ def test_daily_weekly():
     assert_equals([tag_sync, tag_weekly, tag_daily], mocked_manager.performed_tasks)
 
 @istest
-def test_complete():
+def test_full():
     mocked_manager = MonitoringBackupManager(True, True, True)
     perform_backup(mocked_manager)
 
