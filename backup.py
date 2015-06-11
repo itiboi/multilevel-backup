@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import sys
-
 from os import path
 from datetime import date, timedelta
 
@@ -25,36 +23,74 @@ def level_backup_needed(upper_first, lower_last, min_diff):
         # Erstes Backup des höheren Levels
         return True
 
-daily_count = 5
-weekly_count = 4
+class RsnapshotManager(object):
+    _daily_count = 5
+    _weekly_count = 4
 
-backup_root = '/home/tim/backup/rsnapshot/'
-daily_first = path.join(backup_root, 'daily.0')
-daily_last = path.join(backup_root, 'daily.' + str(daily_count-1))
-daily_diff = timedelta(days=1)
+    def __init__(self, backup_root='/home/tim/backup/rsnapshot/'):
+        self.daily_first = path.join(backup_root, 'daily.0')
+        self.daily_last = path.join(backup_root, 'daily.' + str(self._daily_count-1))
+        self.daily_diff = timedelta(days=1)
 
-weekly_first = path.join(backup_root, 'weekly.0')
-weekly_last = path.join(backup_root, 'weekly.' + str(weekly_count-1))
-weekly_diff = timedelta(days=7)
+        self.weekly_first = path.join(backup_root, 'weekly.0')
+        self.weekly_last = path.join(backup_root, 'weekly.' + str(self._weekly_count-1))
+        self.weekly_diff = timedelta(days=7)
 
-monthly_first = path.join(backup_root, 'monthly.0')
-monthly_diff = timedelta(days=28)
+        self.monthly_first = path.join(backup_root, 'monthly.0')
+        self.monthly_diff = timedelta(days=28)
 
+    @property
+    def is_daily_needed(self):
+        if not path.exists(self.daily_first):
+            return True
 
-if path.exists(daily_first) and (date.today() - folder_time(daily_first)) < daily_diff:
-    # Abbruch, heute schon Backup gemacht
-    print('Abort: Daily backup already performed')
-    sys.exit()
+        delta = date.today() - folder_time(self.daily_first)
+        return delta >= self.daily_diff
 
-# Sync durchführen
-print('Performing sync')
+    @property
+    def is_weekly_needed(self):
+        return level_backup_needed(self.weekly_first, self.daily_last, self.weekly_diff)
 
-# Ggf. Monthly Backup durchführen
-if level_backup_needed(monthly_first, weekly_last, monthly_diff):
-    print('Performing monthly backup')
+    @property
+    def is_monthly_needed(self):
+        return level_backup_needed(self.monthly_first, self.weekly_last, self.monthly_diff)
 
-# Ggf. Weekly Backup durchführen
-if level_backup_needed(weekly_first, daily_last, weekly_diff):
-    print('Performing weekly backup')
+    def perform_sync(self):
+        print('Performing sync')
 
-print('Performing daily backup')
+    def perform_daily(self):
+        print('Performing daily backup')
+
+    def perform_weekly(self):
+        print('Performing weekly backup')
+
+    def perform_monthly(self):
+        print('Performing monthly backup')
+
+def perform_backup(backup_manager=None):
+    """Perform actual backup. Relies on a backup manager for information retrieving and backup performing."""
+
+    if backup_manager is None:
+        backup_manager = RsnapshotManager()
+
+    # Testen ob Backup generell nötig
+    if not backup_manager.is_daily_needed:
+        # Abbruch, heute schon Backup gemacht
+        print('Abort: Daily backup already performed')
+        return
+
+    # Sync durchführen
+    backup_manager.perform_sync()
+
+    # Ggf. Weekly Backup durchführen
+    if backup_manager.is_weekly_needed:
+        # Ggf. vorher Monthly Backup durchführen
+        if backup_manager.is_monthly_needed:
+            backup_manager.perform_monthly()
+
+        backup_manager.perform_weekly()
+
+    backup_manager.perform_daily()
+
+if __name__ == '__main__':
+    perform_backup()

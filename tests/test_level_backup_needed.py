@@ -3,7 +3,7 @@
 
 from backup import level_backup_needed
 from datetime import datetime, timedelta
-from nose.tools import *
+from nose.tools import istest, nottest, with_setup, assert_true, assert_false, assert_equals
 
 import os
 import tempfile
