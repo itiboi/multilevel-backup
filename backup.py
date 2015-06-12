@@ -4,6 +4,7 @@
 from os import path
 from datetime import date, timedelta
 
+import argparse
 import subprocess
 
 def folder_time(folder):
@@ -61,32 +62,32 @@ class RsnapshotManager(object):
         return level_backup_needed(self.monthly_first, self.weekly_last, self.monthly_diff)
 
     def perform_sync(self):
-        print('Performing sync')
+        print('-- Performing sync')
 
         if not self.dry_run:
             command = self._rsnapshot_command_template.format(action='sync')
-            subprocess.check_call(command)
+            subprocess.check_call(command, shell=True)
 
     def perform_daily(self):
-        print('Performing daily backup')
+        print('\n-- Performing daily backup')
 
         if not self.dry_run:
             command = self._rsnapshot_command_template.format(action='daily')
-            subprocess.check_call(command)
+            subprocess.check_call(command, shell=True)
 
     def perform_weekly(self):
-        print('Performing weekly backup')
+        print('\n-- Performing weekly backup')
 
         if not self.dry_run:
             command = self._rsnapshot_command_template.format(action='weekly')
-            subprocess.check_call(command)
+            subprocess.check_call(command, shell=True)
 
     def perform_monthly(self):
-        print('Performing monthly backup')
+        print('\n-- Performing monthly backup')
 
         if not self.dry_run:
             command = self._rsnapshot_command_template.format(action='monthly')
-            subprocess.check_call(command)
+            subprocess.check_call(command, shell=True)
 
 def perform_backup(backup_manager=None):
     """Perform actual backup. Relies on a backup manager for information retrieving and backup performing."""
@@ -113,4 +114,9 @@ def perform_backup(backup_manager=None):
     backup_manager.perform_daily()
 
 if __name__ == '__main__':
-    perform_backup()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--dry-run', help='Only show what script would do', action='store_true')
+    args = parser.parse_args()
+
+    manager = RsnapshotManager(dry_run=args.dry_run)
+    perform_backup(manager)
