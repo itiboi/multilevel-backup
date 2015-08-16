@@ -7,31 +7,34 @@ from datetime import date, timedelta
 import argparse
 import subprocess
 
-def folder_time(folder):
+
+def _folder_time(folder):
     """Get day timestamp of a folder as date."""
     stamp = path.getmtime(folder)
     return date.fromtimestamp(stamp)
 
-def level_backup_needed(upper_first, lower_last, min_diff):
+
+def _level_backup_needed(upper_first, lower_last, min_diff):
     """Check whether backup of this increment level is needed."""
     if not path.exists(lower_last):
         return False
 
     if path.exists(upper_first):
         # Only perform if enough time passed
-        time_upper = folder_time(upper_first)
-        time_lower = folder_time(lower_last)
+        time_upper = _folder_time(upper_first)
+        time_lower = _folder_time(lower_last)
         return (time_lower - time_upper) >= min_diff
     else:
         # First backup of higher level
         return True
 
-class RsnapshotManager(object):
-    _rsnapshot_command_template = 'rsnapshot -c rsnapshot.conf {action}'
+
+class DefaultSnapshotManager(object):
+    """Provide information about current backup state."""
     _daily_count = 5
     _weekly_count = 4
 
-    def __init__(self, backup_root='/home/tim/backup/rsnapshot/', dry_run=False):
+    def __init__(self, backup_root='/home/tim/backup/rsnapshot/'):
         self.daily_first = path.join(backup_root, 'daily.0')
         self.daily_last = path.join(backup_root, 'daily.' + str(self._daily_count-1))
         self.daily_diff = timedelta(days=1)
@@ -43,23 +46,44 @@ class RsnapshotManager(object):
         self.monthly_first = path.join(backup_root, 'monthly.0')
         self.monthly_diff = timedelta(days=28)
 
-        self.dry_run = dry_run
-
     @property
     def is_daily_needed(self):
         if not path.exists(self.daily_first):
             return True
 
-        delta = date.today() - folder_time(self.daily_first)
+        delta = date.today() - _folder_time(self.daily_first)
         return delta >= self.daily_diff
 
     @property
     def is_weekly_needed(self):
-        return level_backup_needed(self.weekly_first, self.daily_last, self.weekly_diff)
+        return _level_backup_needed(self.weekly_first, self.daily_last, self.weekly_diff)
 
     @property
     def is_monthly_needed(self):
-        return level_backup_needed(self.monthly_first, self.weekly_last, self.monthly_diff)
+        return _level_backup_needed(self.monthly_first, self.weekly_last, self.monthly_diff)
+
+    @property
+    def upcoming_tasks(self):
+        """Dictionary which tasks should be performed today (daily=True/False, weekly=True/False, monthly=True/False)"""
+
+        tasks = {'daily': False, 'weekly': False, 'monthly': False}
+        if self.is_daily_needed:
+            tasks['daily'] = True
+
+        if tasks['daily'] and self.is_weekly_needed:
+            tasks['weekly'] = True
+
+        if tasks['weekly'] and self.is_monthly_needed:
+            tasks['monthly'] = True
+
+        return tasks
+
+
+class DefaultBackupExecutor(object):
+    _rsnapshot_command_template = 'rsnapshot -c rsnapshot.conf {action}'
+
+    def __init__(self, dry_run=False):
+        self.dry_run = dry_run
 
     def perform_sync(self):
         print('-- Performing sync')
@@ -89,34 +113,43 @@ class RsnapshotManager(object):
             command = self._rsnapshot_command_template.format(action='monthly')
             subprocess.check_call(command, shell=True)
 
-def perform_backup(backup_manager=None):
+
+def perform_backup(snapshot_manager=None, backup_executor=None):
     """Perform actual backup. Relies on a backup manager for information retrieving and backup performing."""
 
-    if backup_manager is None:
-        backup_manager = RsnapshotManager()
+    # Use default manager if none given
+    if snapshot_manager is None:
+        snapshot_manager = DefaultSnapshotManager(backup_root='/home/tim/backup/rsnapshot/')
+
+    # Use default backup executor if none given
+    if backup_executor is None:
+        backup_executor = DefaultBackupExecutor()
+
+    tasks = snapshot_manager.upcoming_tasks
 
     # Test whether backup is needed in general
-    if not backup_manager.is_daily_needed:
+    if not tasks['daily']:
         print('Abort: Daily backup already performed')
         return
 
     # Perform sync (actual backup)
-    backup_manager.perform_sync()
+    backup_executor.perform_sync()
+
+    # Perform monthly if needed
+    if tasks['monthly']:
+        backup_executor.perform_monthly()
 
     # Perform weekly if needed
-    if backup_manager.is_weekly_needed:
-        # Perform monthly if needed
-        if backup_manager.is_monthly_needed:
-            backup_manager.perform_monthly()
+    if tasks['weekly']:
+        backup_executor.perform_weekly()
 
-        backup_manager.perform_weekly()
-
-    backup_manager.perform_daily()
+    # Perform daily
+    backup_executor.perform_daily()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--dry-run', help='Only show what script would do', action='store_true')
     args = parser.parse_args()
 
-    manager = RsnapshotManager(dry_run=args.dry_run)
-    perform_backup(manager)
+    executor = DefaultBackupExecutor(dry_run=args.dry_run)
+    perform_backup(backup_executor=executor)

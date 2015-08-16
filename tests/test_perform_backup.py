@@ -9,24 +9,30 @@ tag_daily = 'daily'
 tag_weekly = 'weekly'
 tag_monthly = 'monthly'
 
+#
+# TODO: Update test
+#
+
 class MonitoringBackupManager(object):
-    def __init__(self, daily_needed, weekly_needed, monthly_needed):
-        self.daily_needed = daily_needed
-        self.weekly_needed = weekly_needed
-        self.monthly_needed = monthly_needed
+    def __init__(self, daily, weekly, monthly):
+        self.tasks = {'daily': daily, 'weekly': weekly, 'monthly': monthly}
         self._performed_tasks = []
 
     @property
     def is_daily_needed(self):
-        return self.daily_needed
+        return self.tasks['daily']
 
     @property
     def is_weekly_needed(self):
-        return self.weekly_needed
+        return self.tasks['weekly']
 
     @property
     def is_monthly_needed(self):
-        return self.monthly_needed
+        return self.tasks['monthly']
+
+    @property
+    def upcoming_tasks(self):
+        return self.tasks
 
     def perform_sync(self):
         self._performed_tasks.append(tag_sync)
@@ -46,42 +52,42 @@ class MonitoringBackupManager(object):
 
 @istest
 def test_nothing_needed():
-    mocked_manager = MonitoringBackupManager(False, False, False)
-    perform_backup(mocked_manager)
+    mocked_manager = MonitoringBackupManager(daily=False, weekly=False, monthly=False)
+    perform_backup(snapshot_manager=mocked_manager, backup_executor=mocked_manager)
 
     assert_equals([], mocked_manager.performed_tasks)
 
 @istest
 def test_daily_already_executed():
-    mocked_manager = MonitoringBackupManager(False, True, True)
-    perform_backup(mocked_manager)
+    mocked_manager = MonitoringBackupManager(daily=False, weekly=True, monthly=True)
+    perform_backup(snapshot_manager=mocked_manager, backup_executor=mocked_manager)
 
     assert_equals([], mocked_manager.performed_tasks)
 
 @istest
 def test_only_daily():
-    mocked_manager = MonitoringBackupManager(True, False, False)
-    perform_backup(mocked_manager)
+    mocked_manager = MonitoringBackupManager(daily=True, weekly=False, monthly=False)
+    perform_backup(snapshot_manager=mocked_manager, backup_executor=mocked_manager)
 
     assert_equals([tag_sync, tag_daily], mocked_manager.performed_tasks)
 
 @istest
 def test_daily_weekly():
-    mocked_manager = MonitoringBackupManager(True, True, False)
-    perform_backup(mocked_manager)
+    mocked_manager = MonitoringBackupManager(daily=True, weekly=True, monthly=False)
+    perform_backup(snapshot_manager=mocked_manager, backup_executor=mocked_manager)
 
     assert_equals([tag_sync, tag_weekly, tag_daily], mocked_manager.performed_tasks)
 
 @istest
 def test_full():
-    mocked_manager = MonitoringBackupManager(True, True, True)
-    perform_backup(mocked_manager)
+    mocked_manager = MonitoringBackupManager(daily=True, weekly=True, monthly=True)
+    perform_backup(snapshot_manager=mocked_manager, backup_executor=mocked_manager)
 
     assert_equals([tag_sync, tag_monthly, tag_weekly, tag_daily], mocked_manager.performed_tasks)
 
 @istest
 def test_monthly_without_weekly():
-    mocked_manager = MonitoringBackupManager(True, False, True)
-    perform_backup(mocked_manager)
+    mocked_manager = MonitoringBackupManager(daily=True, weekly=False, monthly=True)
+    perform_backup(snapshot_manager=mocked_manager, backup_executor=mocked_manager)
 
-    assert_equals([tag_sync, tag_daily], mocked_manager.performed_tasks)
+    assert_equals([tag_sync, tag_monthly, tag_daily], mocked_manager.performed_tasks)

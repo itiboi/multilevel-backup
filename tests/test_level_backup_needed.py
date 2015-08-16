@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from backup import level_backup_needed
+from backup import _level_backup_needed
 from datetime import datetime, timedelta
 from nose.tools import istest, nottest, with_setup, assert_true, assert_false, assert_equals
 
@@ -122,7 +122,7 @@ def check_delta(result, delta, lower, upper):
     """Set timestamp to folder and checks whether function result matches given result."""
     set_time(lower_folder, lower)
     set_time(upper_folder, upper)
-    assert_equals(result, level_backup_needed(upper_folder, lower_folder, delta))
+    assert_equals(result, _level_backup_needed(upper_folder, lower_folder, delta))
 
 #
 # Actual tests
@@ -133,14 +133,14 @@ def check_delta(result, delta, lower, upper):
 def test_non_existing_lower():
     non_existing_lower = os.path.join(lower_folder, 'lower')
     for delta in example_deltas:
-        assert_false(level_backup_needed(upper_folder, non_existing_lower, delta))
+        assert_false(_level_backup_needed(upper_folder, non_existing_lower, delta))
 
 @istest
 @with_setup(set_up_folder, tear_down_folder)
 def test_non_existing_upper():
     non_existing_upper = os.path.join(upper_folder, 'upper')
     for delta in example_deltas:
-        assert_true(level_backup_needed(non_existing_upper, lower_folder, delta))
+        assert_true(_level_backup_needed(non_existing_upper, lower_folder, delta))
 
 @istest
 @with_setup(set_up_folder, tear_down_folder)
@@ -148,7 +148,7 @@ def test_non_existing_both():
     non_existing_lower = os.path.join(lower_folder, 'lower')
     non_existing_upper = os.path.join(upper_folder, 'upper')
     for delta in example_deltas:
-        assert_false(level_backup_needed(non_existing_upper, non_existing_lower, delta))
+        assert_false(_level_backup_needed(non_existing_upper, non_existing_lower, delta))
 
 @istest
 @with_setup(set_up_folder, tear_down_folder)

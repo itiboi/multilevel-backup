@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from backup import folder_time
+from backup import _folder_time
 from datetime import date, datetime, timedelta
 from nose.tools import istest, nottest, with_setup, raises, assert_equals
 
@@ -50,7 +50,7 @@ def set_time(time):
 @nottest
 def check_time(test_time, result_time):
     set_time(test_time)
-    assert_equals(result_time, folder_time(test_folder))
+    assert_equals(result_time, _folder_time(test_folder))
 
 #
 # Actual tests
@@ -61,7 +61,7 @@ def check_time(test_time, result_time):
 @with_setup(set_up_folder, tear_down_folder)
 def test_non_existing():
     folder = os.path.join(test_folder, 'non_existing')
-    folder_time(folder)
+    _folder_time(folder)
 
 @istest
 @with_setup(set_up_folder, tear_down_folder)
