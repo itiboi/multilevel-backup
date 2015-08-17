@@ -1,144 +1,177 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from backup import DefaultSnapshotManager
+from rsnapshotbackup import DefaultSnapshotManager
 from datetime import datetime
-from nose.tools import assert_true, assert_false, assert_equals
-from unittest import TestCase
-from unittest.mock import patch, PropertyMock
+from unittest.mock import PropertyMock
 
 import os
-import shutil
-import tempfile
+import pytest
 
 
-class LevelIndicatorTest(TestCase):
-    """Test whether every level indicator works properly."""
-
-    def setUp(self):
-        self.test_folder = tempfile.mkdtemp()
-        self.snapshot_manager = DefaultSnapshotManager(backup_root=self.test_folder)
-
-    def tearDown(self):
-        shutil.rmtree(self.test_folder)
-
-    def _create_folder(self, folder, timestamp):
-        os.makedirs(folder)
-        os.system('touch -t {time:%Y%m%d%H%M.%S} {file}'.format(time=timestamp, file=folder))
-
-    def test_empty_folder(self):
-        assert_true(self.snapshot_manager.is_daily_needed)
-        assert_false(self.snapshot_manager.is_weekly_needed)
-        assert_false(self.snapshot_manager.is_monthly_needed)
-
-    def test_daily_executed(self):
-        self._create_folder(self.snapshot_manager.daily_first, datetime.now())
-
-        assert_false(self.snapshot_manager.is_daily_needed)
-
-    def test_daily_needed(self):
-        self._create_folder(self.snapshot_manager.daily_first, datetime.now() - self.snapshot_manager.daily_diff)
-
-        assert_true(self.snapshot_manager.is_daily_needed)
-
-    def test_weekly_first(self):
-        today = datetime.now()
-        self._create_folder(self.snapshot_manager.daily_first, today - self.snapshot_manager.daily_diff)
-        self._create_folder(self.snapshot_manager.daily_last, today - self.snapshot_manager.weekly_diff)
-
-        assert_true(self.snapshot_manager.is_weekly_needed)
-
-    def test_weekly_executed(self):
-        today = datetime.now()
-        self._create_folder(self.snapshot_manager.daily_last, today)
-        self._create_folder(self.snapshot_manager.weekly_first, today - self.snapshot_manager.daily_diff)
-
-        assert_false(self.snapshot_manager.is_weekly_needed)
-
-    def test_weekly_almost_needed(self):
-        today = datetime.now()
-        self._create_folder(self.snapshot_manager.daily_last, today)
-        self._create_folder(self.snapshot_manager.weekly_first, today - self.snapshot_manager.weekly_diff + self.snapshot_manager.daily_diff)
-
-        assert_false(self.snapshot_manager.is_weekly_needed)
-
-    def test_weekly_needed(self):
-        today = datetime.now()
-        self._create_folder(self.snapshot_manager.daily_last, today)
-        self._create_folder(self.snapshot_manager.weekly_first, today - self.snapshot_manager.weekly_diff)
-
-        assert_true(self.snapshot_manager.is_weekly_needed)
-
-    def test_monthly_first(self):
-        self._create_folder(self.snapshot_manager.weekly_last, datetime.now())
-
-        assert_true(self.snapshot_manager.is_monthly_needed)
-
-    def test_monthly_executed(self):
-        today = datetime.now()
-        self._create_folder(self.snapshot_manager.weekly_last, today)
-        self._create_folder(self.snapshot_manager.monthly_first, today - self.snapshot_manager.daily_diff)
-
-        assert_false(self.snapshot_manager.is_monthly_needed)
-
-    def test_monthly_almost_needed(self):
-        today = datetime.now()
-        self._create_folder(self.snapshot_manager.weekly_last, today)
-        self._create_folder(self.snapshot_manager.monthly_first, today - self.snapshot_manager.monthly_diff + self.snapshot_manager.daily_diff)
-
-        assert_false(self.snapshot_manager.is_monthly_needed)
-
-    def test_monthly_needed(self):
-        today = datetime.now()
-        self._create_folder(self.snapshot_manager.weekly_last, today)
-        self._create_folder(self.snapshot_manager.monthly_first, today - self.snapshot_manager.monthly_diff)
-
-        assert_true(self.snapshot_manager.is_monthly_needed)
+#
+# Test helper
+#
 
 
-@patch('backup.DefaultSnapshotManager.is_monthly_needed', new_callable=PropertyMock)
-@patch('backup.DefaultSnapshotManager.is_weekly_needed', new_callable=PropertyMock)
-@patch('backup.DefaultSnapshotManager.is_daily_needed', new_callable=PropertyMock)
-class UpcomingTasksTest(TestCase):
-    """Test whether return values of upcoming_tasks matches"""
+@pytest.fixture(scope='function')
+def snapshot_manager(tmpdir):
+    return DefaultSnapshotManager(backup_root=str(tmpdir))
 
-    def _set_return_values(self, mocked_properties):
-        """Set return values of given mocks to given value."""
-        for mock in mocked_properties:
-            mock.return_value = mocked_properties[mock]
 
-    def test_first_backup(self, mock_daily, mock_weekly, mock_monthly):
-        self._set_return_values({mock_daily: True, mock_weekly: False, mock_monthly: False})
+def create_folder(folder, timestamp):
+    """Create folder with given timestamp."""
+    os.makedirs(folder)
+    os.system('touch -t {time:%Y%m%d%H%M.%S} {file}'.format(time=timestamp, file=folder))
 
-        tasks = DefaultSnapshotManager().upcoming_tasks
-        assert_equals(tasks, {'daily': True, 'weekly': False, 'monthly': False})
 
-    def test_daily_weekly(self, mock_daily, mock_weekly, mock_monthly):
-        self._set_return_values({mock_daily: True, mock_weekly: True, mock_monthly: False})
+@pytest.fixture(scope='function')
+def mock_daily(mocker):
+    return mocker.patch('rsnapshotbackup.DefaultSnapshotManager.is_daily_needed', new_callable=PropertyMock)
 
-        tasks = DefaultSnapshotManager().upcoming_tasks
-        assert_equals(tasks, {'daily': True, 'weekly': True, 'monthly': False})
 
-    def test_full_backup(self, mock_daily, mock_weekly, mock_monthly):
-        self._set_return_values({mock_daily: True, mock_weekly: True, mock_monthly: True})
+@pytest.fixture(scope='function')
+def mock_weekly(mocker):
+    return mocker.patch('rsnapshotbackup.DefaultSnapshotManager.is_weekly_needed', new_callable=PropertyMock)
 
-        tasks = DefaultSnapshotManager().upcoming_tasks
-        assert_equals(tasks, {'daily': True, 'weekly': True, 'monthly': True})
 
-    def test_weekly_monthly_ignored(self, mock_daily, mock_weekly, mock_monthly):
-        self._set_return_values({mock_daily: False, mock_weekly: True, mock_monthly: True})
+@pytest.fixture(scope='function')
+def mock_monthly(mocker):
+    return mocker.patch('rsnapshotbackup.DefaultSnapshotManager.is_monthly_needed', new_callable=PropertyMock)
 
-        tasks = DefaultSnapshotManager().upcoming_tasks
-        assert_equals(tasks, {'daily': False, 'weekly': False, 'monthly': False})
 
-    def test_monthly_ignored(self, mock_daily, mock_weekly, mock_monthly):
-        self._set_return_values({mock_daily: False, mock_weekly: False, mock_monthly: True})
+def mock_return_values(mocked_properties):
+    """Set return values of given mocks to given value."""
+    for mock in mocked_properties:
+        mock.return_value = mocked_properties[mock]
 
-        tasks = DefaultSnapshotManager().upcoming_tasks
-        assert_equals(tasks, {'daily': False, 'weekly': False, 'monthly': False})
+#
+# Actual level indicator tests
+#
 
-    def test_monthly_without_weekly_ignored(self, mock_daily, mock_weekly, mock_monthly):
-        self._set_return_values({mock_daily: True, mock_weekly: False, mock_monthly: True})
 
-        tasks = DefaultSnapshotManager().upcoming_tasks
-        assert_equals(tasks, {'daily': True, 'weekly': False, 'monthly': False})
+def test_indicator_empty_folder(snapshot_manager):
+    assert snapshot_manager.is_daily_needed
+    assert not snapshot_manager.is_weekly_needed
+    assert not snapshot_manager.is_monthly_needed
+
+
+def test_indicator_daily_executed(snapshot_manager):
+    create_folder(snapshot_manager.daily_first, datetime.now())
+
+    assert not snapshot_manager.is_daily_needed
+
+
+def test_indicator_daily_needed(snapshot_manager):
+    create_folder(snapshot_manager.daily_first, datetime.now() - snapshot_manager.daily_diff)
+
+    assert snapshot_manager.is_daily_needed
+
+
+def test_indicator_weekly_first(snapshot_manager):
+    today = datetime.now()
+    create_folder(snapshot_manager.daily_first, today - snapshot_manager.daily_diff)
+    create_folder(snapshot_manager.daily_last, today - snapshot_manager.weekly_diff)
+
+    assert snapshot_manager.is_weekly_needed
+
+
+def test_indicator_weekly_executed(snapshot_manager):
+    today = datetime.now()
+    create_folder(snapshot_manager.daily_last, today)
+    create_folder(snapshot_manager.weekly_first, today - snapshot_manager.daily_diff)
+
+    assert not snapshot_manager.is_weekly_needed
+
+
+def test_indicator_weekly_almost_needed(snapshot_manager):
+    today = datetime.now()
+    create_folder(snapshot_manager.daily_last, today)
+    create_folder(snapshot_manager.weekly_first, today - snapshot_manager.weekly_diff + snapshot_manager.daily_diff)
+
+    assert not snapshot_manager.is_weekly_needed
+
+
+def test_indicator_weekly_needed(snapshot_manager):
+    today = datetime.now()
+    create_folder(snapshot_manager.daily_last, today)
+    create_folder(snapshot_manager.weekly_first, today - snapshot_manager.weekly_diff)
+
+    assert snapshot_manager.is_weekly_needed
+
+
+def test_indicator_monthly_first(snapshot_manager):
+    create_folder(snapshot_manager.weekly_last, datetime.now())
+
+    assert snapshot_manager.is_monthly_needed
+
+
+def test_indicator_monthly_executed(snapshot_manager):
+    today = datetime.now()
+    create_folder(snapshot_manager.weekly_last, today)
+    create_folder(snapshot_manager.monthly_first, today - snapshot_manager.daily_diff)
+
+    assert not snapshot_manager.is_monthly_needed
+
+
+def test_indicator_monthly_almost_needed(snapshot_manager):
+    today = datetime.now()
+    create_folder(snapshot_manager.weekly_last, today)
+    create_folder(snapshot_manager.monthly_first, today - snapshot_manager.monthly_diff + snapshot_manager.daily_diff)
+
+    assert not snapshot_manager.is_monthly_needed
+
+
+def test_indicator_monthly_needed(snapshot_manager):
+    today = datetime.now()
+    create_folder(snapshot_manager.weekly_last, today)
+    create_folder(snapshot_manager.monthly_first, today - snapshot_manager.monthly_diff)
+
+    assert snapshot_manager.is_monthly_needed
+
+
+#
+# Actual upcoming tasks tests
+#
+
+
+def test_upcoming_first_backup(mock_daily, mock_weekly, mock_monthly):
+    mock_return_values({mock_daily: True, mock_weekly: False, mock_monthly: False})
+
+    tasks = DefaultSnapshotManager().upcoming_tasks
+    assert tasks == {'daily': True, 'weekly': False, 'monthly': False}
+
+
+def test_upcoming_daily_weekly(mock_daily, mock_weekly, mock_monthly):
+    mock_return_values({mock_daily: True, mock_weekly: True, mock_monthly: False})
+
+    tasks = DefaultSnapshotManager().upcoming_tasks
+    assert tasks == {'daily': True, 'weekly': True, 'monthly': False}
+
+
+def test_upcoming_full_backup(mock_daily, mock_weekly, mock_monthly):
+    mock_return_values({mock_daily: True, mock_weekly: True, mock_monthly: True})
+
+    tasks = DefaultSnapshotManager().upcoming_tasks
+    assert tasks == {'daily': True, 'weekly': True, 'monthly': True}
+
+
+def test_upcoming_weekly_monthly_ignored(mock_daily, mock_weekly, mock_monthly):
+    mock_return_values({mock_daily: False, mock_weekly: True, mock_monthly: True})
+
+    tasks = DefaultSnapshotManager().upcoming_tasks
+    assert tasks == {'daily': False, 'weekly': False, 'monthly': False}
+
+
+def test_upcoming_monthly_ignored(mock_daily, mock_weekly, mock_monthly):
+    mock_return_values({mock_daily: False, mock_weekly: False, mock_monthly: True})
+
+    tasks = DefaultSnapshotManager().upcoming_tasks
+    assert tasks == {'daily': False, 'weekly': False, 'monthly': False}
+
+
+def test_upcoming_monthly_without_weekly_ignored(mock_daily, mock_weekly, mock_monthly):
+    mock_return_values({mock_daily: True, mock_weekly: False, mock_monthly: True})
+
+    tasks = DefaultSnapshotManager().upcoming_tasks
+    assert tasks == {'daily': True, 'weekly': False, 'monthly': False}

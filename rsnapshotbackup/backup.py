@@ -4,7 +4,6 @@
 from os import path
 from datetime import date, timedelta
 
-import argparse
 import subprocess
 
 
@@ -145,11 +144,3 @@ def perform_backup(snapshot_manager=None, backup_executor=None):
 
     # Perform daily
     backup_executor.perform_daily()
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--dry-run', help='Only show what script would do', action='store_true')
-    args = parser.parse_args()
-
-    executor = DefaultBackupExecutor(dry_run=args.dry_run)
-    perform_backup(backup_executor=executor)

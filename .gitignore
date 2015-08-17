@@ -109,4 +109,4 @@ crashlytics.properties
 crashlytics-build.properties
 
 # Python virtualenv
-backupenv/
+.venv/
