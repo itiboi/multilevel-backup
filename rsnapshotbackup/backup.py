@@ -33,7 +33,7 @@ class DefaultSnapshotManager(object):
     _daily_count = 5
     _weekly_count = 4
 
-    def __init__(self, backup_root='/home/tim/backup/rsnapshot/'):
+    def __init__(self, backup_root):
         self.daily_first = path.join(backup_root, 'daily.0')
         self.daily_last = path.join(backup_root, 'daily.' + str(self._daily_count-1))
         self.daily_diff = timedelta(days=1)
