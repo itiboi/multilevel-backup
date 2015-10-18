@@ -79,37 +79,38 @@ class DefaultSnapshotManager(object):
 
 
 class DefaultBackupExecutor(object):
-    _rsnapshot_command_template = 'rsnapshot -c rsnapshot.conf {action}'
+    _rsnapshot_command_template = 'rsnapshot -c {file} {action}'
 
-    def __init__(self, dry_run=False):
+    def __init__(self, conf_file='rsnapshot.conf', dry_run=False):
+        self.conf_file = conf_file
         self.dry_run = dry_run
 
     def perform_sync(self):
         print('-- Performing sync')
 
         if not self.dry_run:
-            command = self._rsnapshot_command_template.format(action='sync')
+            command = self._rsnapshot_command_template.format(file=self.conf_file, action='sync')
             subprocess.check_call(command, shell=True)
 
     def perform_daily(self):
         print('\n-- Performing daily backup')
 
         if not self.dry_run:
-            command = self._rsnapshot_command_template.format(action='daily')
+            command = self._rsnapshot_command_template.format(file=self.conf_file, action='daily')
             subprocess.check_call(command, shell=True)
 
     def perform_weekly(self):
         print('\n-- Performing weekly backup')
 
         if not self.dry_run:
-            command = self._rsnapshot_command_template.format(action='weekly')
+            command = self._rsnapshot_command_template.format(file=self.conf_file, action='weekly')
             subprocess.check_call(command, shell=True)
 
     def perform_monthly(self):
         print('\n-- Performing monthly backup')
 
         if not self.dry_run:
-            command = self._rsnapshot_command_template.format(action='monthly')
+            command = self._rsnapshot_command_template.format(file=self.conf_file, action='monthly')
             subprocess.check_call(command, shell=True)
 
 

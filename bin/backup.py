@@ -6,8 +6,9 @@ from rsnapshotbackup import DefaultBackupExecutor, perform_backup
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('-d', '--dry-run', help='Only show what script would do', action='store_true')
+    parser.add_argument('-c', '--config-file', help='config file for rsnapshot to use', default='rsnapshot.conf')
+    parser.add_argument('-d', '--dry-run', help='only show what script would do', action='store_true')
     args = parser.parse_args()
 
-    executor = DefaultBackupExecutor(dry_run=args.dry_run)
+    executor = DefaultBackupExecutor(conf_file=args.config_file, dry_run=args.dry_run)
     perform_backup(backup_executor=executor)
