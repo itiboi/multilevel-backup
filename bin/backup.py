@@ -2,7 +2,7 @@
 # coding=utf-8
 
 from argparse import ArgumentParser
-from rsnapshotbackup import DefaultBackupExecutor, perform_backup
+from multilevelbackup import DefaultBackupExecutor, perform_backup
 
 if __name__ == '__main__':
     parser = ArgumentParser()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from rsnapshotbackup import _level_backup_needed
+from multilevelbackup import _level_backup_needed
 from datetime import datetime, timedelta
 
 import os

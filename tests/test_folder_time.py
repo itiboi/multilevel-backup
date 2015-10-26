@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from rsnapshotbackup import _folder_time
+from multilevelbackup import _folder_time
 from datetime import date, datetime, timedelta
 
 import os

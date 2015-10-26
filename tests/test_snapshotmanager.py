@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from rsnapshotbackup import DefaultSnapshotManager
+from multilevelbackup import DefaultSnapshotManager
 from datetime import datetime
 from unittest.mock import PropertyMock
 
@@ -27,17 +27,17 @@ def create_folder(folder, timestamp):
 
 @pytest.fixture(scope='function')
 def mock_daily(mocker):
-    return mocker.patch('rsnapshotbackup.DefaultSnapshotManager.is_daily_needed', new_callable=PropertyMock)
+    return mocker.patch('multilevelbackup.DefaultSnapshotManager.is_daily_needed', new_callable=PropertyMock)
 
 
 @pytest.fixture(scope='function')
 def mock_weekly(mocker):
-    return mocker.patch('rsnapshotbackup.DefaultSnapshotManager.is_weekly_needed', new_callable=PropertyMock)
+    return mocker.patch('multilevelbackup.DefaultSnapshotManager.is_weekly_needed', new_callable=PropertyMock)
 
 
 @pytest.fixture(scope='function')
 def mock_monthly(mocker):
-    return mocker.patch('rsnapshotbackup.DefaultSnapshotManager.is_monthly_needed', new_callable=PropertyMock)
+    return mocker.patch('multilevelbackup.DefaultSnapshotManager.is_monthly_needed', new_callable=PropertyMock)
 
 
 def mock_return_values(mocked_properties):
@@ -138,40 +138,40 @@ def test_indicator_monthly_needed(snapshot_manager):
 def test_upcoming_first_backup(mock_daily, mock_weekly, mock_monthly):
     mock_return_values({mock_daily: True, mock_weekly: False, mock_monthly: False})
 
-    tasks = DefaultSnapshotManager().upcoming_tasks
+    tasks = DefaultSnapshotManager(backup_root='').upcoming_tasks
     assert tasks == {'daily': True, 'weekly': False, 'monthly': False}
 
 
 def test_upcoming_daily_weekly(mock_daily, mock_weekly, mock_monthly):
     mock_return_values({mock_daily: True, mock_weekly: True, mock_monthly: False})
 
-    tasks = DefaultSnapshotManager().upcoming_tasks
+    tasks = DefaultSnapshotManager(backup_root='').upcoming_tasks
     assert tasks == {'daily': True, 'weekly': True, 'monthly': False}
 
 
 def test_upcoming_full_backup(mock_daily, mock_weekly, mock_monthly):
     mock_return_values({mock_daily: True, mock_weekly: True, mock_monthly: True})
 
-    tasks = DefaultSnapshotManager().upcoming_tasks
+    tasks = DefaultSnapshotManager(backup_root='').upcoming_tasks
     assert tasks == {'daily': True, 'weekly': True, 'monthly': True}
 
 
 def test_upcoming_weekly_monthly_ignored(mock_daily, mock_weekly, mock_monthly):
     mock_return_values({mock_daily: False, mock_weekly: True, mock_monthly: True})
 
-    tasks = DefaultSnapshotManager().upcoming_tasks
+    tasks = DefaultSnapshotManager(backup_root='').upcoming_tasks
     assert tasks == {'daily': False, 'weekly': False, 'monthly': False}
 
 
 def test_upcoming_monthly_ignored(mock_daily, mock_weekly, mock_monthly):
     mock_return_values({mock_daily: False, mock_weekly: False, mock_monthly: True})
 
-    tasks = DefaultSnapshotManager().upcoming_tasks
+    tasks = DefaultSnapshotManager(backup_root='').upcoming_tasks
     assert tasks == {'daily': False, 'weekly': False, 'monthly': False}
 
 
 def test_upcoming_monthly_without_weekly_ignored(mock_daily, mock_weekly, mock_monthly):
     mock_return_values({mock_daily: True, mock_weekly: False, mock_monthly: True})
 
-    tasks = DefaultSnapshotManager().upcoming_tasks
+    tasks = DefaultSnapshotManager(backup_root='').upcoming_tasks
     assert tasks == {'daily': True, 'weekly': False, 'monthly': False}

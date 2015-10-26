@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from rsnapshotbackup import perform_backup
+from multilevelbackup import perform_backup
 
 tag_sync = 'sync'
 tag_daily = 'daily'
