@@ -2,6 +2,7 @@ from os import path
 from datetime import date, timedelta
 
 import subprocess
+import shlex
 
 
 def _folder_time(folder):
@@ -87,28 +88,28 @@ class DefaultBackupExecutor(object):
 
         if not self.dry_run:
             command = self._rsnapshot_command_template.format(file=self.conf_file, action='sync')
-            subprocess.check_call(command, shell=True)
+            subprocess.check_call(shlex.split(command))
 
     def perform_daily(self):
         print('\n-- Performing daily backup')
 
         if not self.dry_run:
             command = self._rsnapshot_command_template.format(file=self.conf_file, action='daily')
-            subprocess.check_call(command, shell=True)
+            subprocess.check_call(shlex.split(command))
 
     def perform_weekly(self):
         print('\n-- Performing weekly backup')
 
         if not self.dry_run:
             command = self._rsnapshot_command_template.format(file=self.conf_file, action='weekly')
-            subprocess.check_call(command, shell=True)
+            subprocess.check_call(shlex.split(command))
 
     def perform_monthly(self):
         print('\n-- Performing monthly backup')
 
         if not self.dry_run:
             command = self._rsnapshot_command_template.format(file=self.conf_file, action='monthly')
-            subprocess.check_call(command, shell=True)
+            subprocess.check_call(shlex.split(command))
 
 
 def perform_backup(snapshot_manager=None, backup_executor=None):
