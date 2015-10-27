@@ -6,7 +6,7 @@ from multilevelbackup import DefaultBackupExecutor, perform_backup
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('-c', '--config-file', help='config file for rsnapshot to use', default='rsnapshot.conf')
+    parser.add_argument('-c', '--config-file', help='config file for rsnapshot to use', required=True)
     parser.add_argument('-d', '--dry-run', help='only show what script would do', action='store_true')
     args = parser.parse_args()
 
