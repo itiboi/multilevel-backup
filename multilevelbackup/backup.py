@@ -77,39 +77,35 @@ class DefaultSnapshotManager(object):
 
 
 class DefaultBackupExecutor(object):
-    _rsnapshot_command_template = 'rsnapshot -c {file} {action}'
+    _rsnapshot_command_template = 'rsnapshot {dry} -c {file} {{action}}'
 
     def __init__(self, conf_file='rsnapshot.conf', dry_run=False):
-        self.conf_file = conf_file
-        self.dry_run = dry_run
+        dry_run_arg = '-t' if dry_run else ''
+        self._command_template = self._rsnapshot_command_template.format(dry=dry_run_arg, file=conf_file)
 
     def perform_sync(self):
         print('-- Performing sync')
 
-        if not self.dry_run:
-            command = self._rsnapshot_command_template.format(file=self.conf_file, action='sync')
-            subprocess.check_call(shlex.split(command))
+        command = self._command_template.format(action='sync')
+        subprocess.check_call(shlex.split(command))
 
     def perform_daily(self):
         print('\n-- Performing daily backup')
 
-        if not self.dry_run:
-            command = self._rsnapshot_command_template.format(file=self.conf_file, action='daily')
-            subprocess.check_call(shlex.split(command))
+        command = self._command_template.format(action='daily')
+        subprocess.check_call(shlex.split(command))
 
     def perform_weekly(self):
         print('\n-- Performing weekly backup')
 
-        if not self.dry_run:
-            command = self._rsnapshot_command_template.format(file=self.conf_file, action='weekly')
-            subprocess.check_call(shlex.split(command))
+        command = self._command_template.format(action='weekly')
+        subprocess.check_call(shlex.split(command))
 
     def perform_monthly(self):
         print('\n-- Performing monthly backup')
 
-        if not self.dry_run:
-            command = self._rsnapshot_command_template.format(file=self.conf_file, action='monthly')
-            subprocess.check_call(shlex.split(command))
+        command = self._command_template.format(action='monthly')
+        subprocess.check_call(shlex.split(command))
 
 
 def perform_backup(snapshot_manager=None, backup_executor=None):
