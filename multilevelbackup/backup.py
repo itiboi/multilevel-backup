@@ -4,7 +4,8 @@ from datetime import date, timedelta
 import subprocess
 import shlex
 
-from .helpers import folder_time, level_backup_needed, intervals_from_rsnapshot_config
+from .helpers import folder_time, level_backup_needed, \
+    intervals_from_rsnapshot_config, backup_root_from_rsnapshot_config
 
 
 class DefaultSnapshotManager(object):
@@ -21,6 +22,20 @@ class DefaultSnapshotManager(object):
 
         self.monthly_first = path.join(backup_root, 'monthly.0')
         self.monthly_diff = timedelta(days=28)
+
+    @staticmethod
+    def create_from_rsnapshot_conf(conf_file):
+        config = open(conf_file, 'r').read()
+
+        backup_root = backup_root_from_rsnapshot_config(config)
+        intervals = intervals_from_rsnapshot_config(config)
+
+        if 'daily' not in intervals or 'weekly' not in intervals:
+            raise ValueError('No \'daily\' or \'weekly\' in rsnapshot config found')
+
+        return DefaultSnapshotManager(backup_root=backup_root,
+                                      daily_count=intervals['daily'],
+                                      weekly_count=intervals['weekly'])
 
     @property
     def is_daily_needed(self):

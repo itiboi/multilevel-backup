@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-
 from multilevelbackup import perform_backup
 
 tag_sync = 'sync'

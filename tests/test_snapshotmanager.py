@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-
 from multilevelbackup import DefaultSnapshotManager
 from datetime import datetime
 from unittest.mock import PropertyMock

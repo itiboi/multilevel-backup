@@ -10,6 +10,6 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dry-run', help='only show what script would do', action='store_true')
     args = parser.parse_args()
 
-    manager = DefaultSnapshotManager(backup_root='/home/tim/backup/rsnapshot/', daily_count=5, weekly_count=4)
+    manager = DefaultSnapshotManager.create_from_rsnapshot_conf(args.config_file)
     executor = DefaultBackupExecutor(conf_file=args.config_file, dry_run=args.dry_run)
     perform_backup(manager=manager, executor=executor)

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-
 from multilevelbackup.helpers import folder_time
 from datetime import date, datetime, timedelta
 
@@ -21,10 +18,10 @@ def check_time(folder, test_time, result_time):
 #
 
 
-@pytest.mark.xfail(raises=FileNotFoundError)
 def test_non_existing(tmpdir):
-    test_folder = str(tmpdir.join('non_existing'))
-    folder_time(test_folder)
+    with pytest.raises(FileNotFoundError):
+        test_folder = str(tmpdir.join('non_existing'))
+        folder_time(test_folder)
 
 
 @pytest.mark.parametrize("test_time, result_time", [

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-
 from multilevelbackup.helpers import level_backup_needed
 from datetime import datetime, timedelta
 
