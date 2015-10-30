@@ -2,7 +2,7 @@
 # coding=utf-8
 
 from argparse import ArgumentParser
-from multilevelbackup import DefaultBackupExecutor, perform_backup
+from multilevelbackup import DefaultSnapshotManager, DefaultBackupExecutor, perform_backup
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -10,5 +10,6 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dry-run', help='only show what script would do', action='store_true')
     args = parser.parse_args()
 
+    manager = DefaultSnapshotManager(backup_root='/home/tim/backup/rsnapshot/', daily_count=5, weekly_count=4)
     executor = DefaultBackupExecutor(conf_file=args.config_file, dry_run=args.dry_run)
-    perform_backup(backup_executor=executor)
+    perform_backup(manager=manager, executor=executor)

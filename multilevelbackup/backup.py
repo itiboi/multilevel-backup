@@ -9,16 +9,14 @@ from .helpers import folder_time, level_backup_needed, intervals_from_rsnapshot_
 
 class DefaultSnapshotManager(object):
     """Provide information about current backup state."""
-    _daily_count = 5
-    _weekly_count = 4
 
-    def __init__(self, backup_root):
+    def __init__(self, backup_root, daily_count=7, weekly_count=4):
         self.daily_first = path.join(backup_root, 'daily.0')
-        self.daily_last = path.join(backup_root, 'daily.' + str(self._daily_count-1))
+        self.daily_last = path.join(backup_root, 'daily.' + str(daily_count-1))
         self.daily_diff = timedelta(days=1)
 
         self.weekly_first = path.join(backup_root, 'weekly.0')
-        self.weekly_last = path.join(backup_root, 'weekly.' + str(self._weekly_count-1))
+        self.weekly_last = path.join(backup_root, 'weekly.' + str(weekly_count-1))
         self.weekly_diff = timedelta(days=7)
 
         self.monthly_first = path.join(backup_root, 'monthly.0')
@@ -89,18 +87,16 @@ class DefaultBackupExecutor(object):
         subprocess.check_call(shlex.split(command))
 
 
-def perform_backup(snapshot_manager=None, backup_executor=None):
-    """Perform actual backup. Relies on a backup manager for information retrieving and backup performing."""
-
-    # Use default manager if none given
-    if snapshot_manager is None:
-        snapshot_manager = DefaultSnapshotManager(backup_root='/home/tim/backup/rsnapshot/')
+def perform_backup(manager, executor=None):
+    """
+    Perform actual backup. Relies on a backup manager for information retrieving and backup performing.
+    """
 
     # Use default backup executor if none given
-    if backup_executor is None:
-        backup_executor = DefaultBackupExecutor()
+    if executor is None:
+        executor = DefaultBackupExecutor()
 
-    tasks = snapshot_manager.upcoming_tasks
+    tasks = manager.upcoming_tasks
 
     # Test whether backup is needed in general
     if not tasks['daily']:
@@ -108,15 +104,15 @@ def perform_backup(snapshot_manager=None, backup_executor=None):
         return
 
     # Perform sync (actual backup)
-    backup_executor.perform_sync()
+    executor.perform_sync()
 
     # Perform monthly if needed
     if tasks['monthly']:
-        backup_executor.perform_monthly()
+        executor.perform_monthly()
 
     # Perform weekly if needed
     if tasks['weekly']:
-        backup_executor.perform_weekly()
+        executor.perform_weekly()
 
     # Perform daily
-    backup_executor.perform_daily()
+    executor.perform_daily()
