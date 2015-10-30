@@ -7,7 +7,7 @@ setup(
     name='multilevel-backup',
     version='0.1.0',
     packages=find_packages(),
-    scripts=['bin/backup.py'],
+    scripts=['bin/multilevel-backup'],
     author='Tim Bolender',
     author_email='contact@timbolender.de',
     url='',
