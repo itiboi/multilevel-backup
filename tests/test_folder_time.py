@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from multilevelbackup import _folder_time
+from multilevelbackup.helpers import folder_time
 from datetime import date, datetime, timedelta
 
 import os
@@ -14,7 +14,7 @@ import pytest
 
 def check_time(folder, test_time, result_time):
     os.system('touch -t {time:%Y%m%d%H%M.%S} {file}'.format(time=test_time, file=folder))
-    assert result_time == _folder_time(folder)
+    assert result_time == folder_time(folder)
 
 #
 # Actual tests
@@ -24,7 +24,7 @@ def check_time(folder, test_time, result_time):
 @pytest.mark.xfail(raises=FileNotFoundError)
 def test_non_existing(tmpdir):
     test_folder = str(tmpdir.join('non_existing'))
-    _folder_time(test_folder)
+    folder_time(test_folder)
 
 
 @pytest.mark.parametrize("test_time, result_time", [

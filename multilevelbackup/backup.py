@@ -4,26 +4,7 @@ from datetime import date, timedelta
 import subprocess
 import shlex
 
-
-def _folder_time(folder):
-    """Get day timestamp of a folder as date."""
-    stamp = path.getmtime(folder)
-    return date.fromtimestamp(stamp)
-
-
-def _level_backup_needed(upper_first, lower_last, min_diff):
-    """Check whether backup of this increment level is needed."""
-    if not path.exists(lower_last):
-        return False
-
-    if path.exists(upper_first):
-        # Only perform if enough time passed
-        time_upper = _folder_time(upper_first)
-        time_lower = _folder_time(lower_last)
-        return (time_lower - time_upper) >= min_diff
-    else:
-        # First backup of higher level
-        return True
+from .helpers import folder_time, level_backup_needed, intervals_from_rsnapshot_config
 
 
 class DefaultSnapshotManager(object):
@@ -48,16 +29,16 @@ class DefaultSnapshotManager(object):
         if not path.exists(self.daily_first):
             return True
 
-        delta = date.today() - _folder_time(self.daily_first)
+        delta = date.today() - folder_time(self.daily_first)
         return delta >= self.daily_diff
 
     @property
     def is_weekly_needed(self):
-        return _level_backup_needed(self.weekly_first, self.daily_last, self.weekly_diff)
+        return level_backup_needed(self.weekly_first, self.daily_last, self.weekly_diff)
 
     @property
     def is_monthly_needed(self):
-        return _level_backup_needed(self.monthly_first, self.weekly_last, self.monthly_diff)
+        return level_backup_needed(self.monthly_first, self.weekly_last, self.monthly_diff)
 
     @property
     def upcoming_tasks(self):

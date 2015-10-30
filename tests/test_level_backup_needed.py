@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from multilevelbackup import _level_backup_needed
+from multilevelbackup.helpers import level_backup_needed
 from datetime import datetime, timedelta
 
 import os
@@ -36,7 +36,7 @@ def backup_needed(lower_folder, upper_folder, delta, lower_date, upper_date):
     """Set timestamp to folder and checks whether function result matches given result."""
     os.system('touch -t {time:%Y%m%d%H%M.%S} {file}'.format(time=lower_date, file=lower_folder))
     os.system('touch -t {time:%Y%m%d%H%M.%S} {file}'.format(time=upper_date, file=upper_folder))
-    return _level_backup_needed(upper_folder, lower_folder, delta)
+    return level_backup_needed(upper_folder, lower_folder, delta)
 
 #
 # Actual tests
@@ -46,20 +46,20 @@ def backup_needed(lower_folder, upper_folder, delta, lower_date, upper_date):
 @pytest.mark.parametrize('delta', example_deltas)
 def test_non_existing_lower(lower_folder, upper_folder, delta):
     non_existing_lower = os.path.join(lower_folder, 'lower')
-    assert not _level_backup_needed(upper_folder, non_existing_lower, delta)
+    assert not level_backup_needed(upper_folder, non_existing_lower, delta)
 
 
 @pytest.mark.parametrize('delta', example_deltas)
 def test_non_existing_upper(lower_folder, upper_folder, delta):
     non_existing_upper = os.path.join(upper_folder, 'upper')
-    assert _level_backup_needed(non_existing_upper, lower_folder, delta)
+    assert level_backup_needed(non_existing_upper, lower_folder, delta)
 
 
 @pytest.mark.parametrize('delta', example_deltas)
 def test_non_existing_both(lower_folder, upper_folder, delta):
     non_existing_lower = os.path.join(lower_folder, 'lower')
     non_existing_upper = os.path.join(upper_folder, 'upper')
-    assert not _level_backup_needed(non_existing_upper, non_existing_lower, delta)
+    assert not level_backup_needed(non_existing_upper, non_existing_lower, delta)
 
 
 @pytest.mark.parametrize('delta, lower_date, upper_date', [
