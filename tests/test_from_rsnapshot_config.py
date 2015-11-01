@@ -22,5 +22,4 @@ def test_intervals():
     assert intervals_from_rsnapshot_config('retain\ttest\t6\nretain\tnext\t2') == {'test': 6, 'next': 2}
 
     minimal_config = open('tests/rsnapshot-minimal.conf').read()
-    assert intervals_from_rsnapshot_config(minimal_config) == {'first': 8, 'sec': 9, 'other': 10}
-
+    assert intervals_from_rsnapshot_config(minimal_config) == {'daily': 6, 'weekly': 7, 'monthly': 11}

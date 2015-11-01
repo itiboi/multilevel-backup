@@ -172,3 +172,13 @@ def test_upcoming_monthly_without_weekly_ignored(mock_daily, mock_weekly, mock_m
 
     tasks = DefaultSnapshotManager(backup_root='').upcoming_tasks
     assert tasks == {'daily': True, 'weekly': False, 'monthly': False}
+
+
+def test_create_from_config():
+    manager = DefaultSnapshotManager.create_from_rsnapshot_conf('tests/rsnapshot-minimal.conf')
+
+    assert manager.daily_first == '/rsnapshot/minimal/config/root/daily.0'
+    assert manager.daily_last == '/rsnapshot/minimal/config/root/daily.5'
+    assert manager.weekly_first == '/rsnapshot/minimal/config/root/weekly.0'
+    assert manager.weekly_last == '/rsnapshot/minimal/config/root/weekly.6'
+    assert manager.monthly_first == '/rsnapshot/minimal/config/root/monthly.0'
