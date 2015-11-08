@@ -5,7 +5,11 @@ python:
   - 3.5
 
 install:
-  - pip install .
+  - pip install -e .
   - pip install pytest-mock
+  - pip install pytest-cov
+  - pip install coveralls
 
-script: py.test -v tests
+script: py.test --cov multilevelbackup --cov-report term-missing -v tests/
+
+after_success: coveralls --verbose

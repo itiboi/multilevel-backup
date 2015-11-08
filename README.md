@@ -1,6 +1,6 @@
 # multilevel-backup
 
-[![Build Status](https://travis-ci.org/itiboi/multilevel-backup.svg?branch=master)](https://travis-ci.org/itiboi/multilevel-backup)
+[![Build Status](https://travis-ci.org/itiboi/multilevel-backup.svg?branch=master)](https://travis-ci.org/itiboi/multilevel-backup) [![Coverage Status](https://coveralls.io/repos/itiboi/multilevel-backup/badge.svg?branch=master&service=github)](https://coveralls.io/github/itiboi/multilevel-backup?branch=master)
 
 Simplifying the management of a multilevel backup structure with rsnapshot especially for not always-on devices.
 Since rsnapshot takes only care about the actual backup process and leaves the handling and timing of multiple backup
@@ -45,7 +45,7 @@ $ python3 ./setup.py install
 To perform a backup, just call
 
 ```
-multilevel-backup -c path/to/rsnapshot/config
+$ multilevel-backup -c path/to/rsnapshot/config
 ```
 
 and relax.
