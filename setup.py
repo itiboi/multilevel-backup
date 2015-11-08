@@ -10,7 +10,8 @@ setup(
     scripts=['bin/multilevel-backup'],
     author='Tim Bolender',
     author_email='contact@timbolender.de',
-    url='',
+    url='https://github.com/itiboi/multilevel-backup',
     license='',
-    description='Python wrapper around rsnapshot which simplifies a multi-level backup setup'
+    description='Simplifies the management of a multi-level backup structure with rsnapshot especially for not'
+                'always-on devices.'
 )
