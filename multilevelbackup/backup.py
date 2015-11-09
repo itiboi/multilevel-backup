@@ -31,7 +31,7 @@ class DefaultSnapshotManager(object):
         intervals = intervals_from_rsnapshot_config(config)
 
         if 'daily' not in intervals or 'weekly' not in intervals:
-            raise ValueError('No \'daily\' or \'weekly\' in rsnapshot config found')
+            raise ValueError('No \'daily\' or \'weekly\' interval in rsnapshot config found')
 
         return DefaultSnapshotManager(backup_root=backup_root,
                                       daily_count=intervals['daily'],
@@ -73,7 +73,7 @@ class DefaultSnapshotManager(object):
 class DefaultBackupExecutor(object):
     _rsnapshot_command_template = 'rsnapshot {dry} -c {file} {{action}}'
 
-    def __init__(self, conf_file='rsnapshot.conf', dry_run=False):
+    def __init__(self, conf_file, dry_run=False):
         dry_run_arg = '-t' if dry_run else ''
         self._command_template = self._rsnapshot_command_template.format(dry=dry_run_arg, file=conf_file)
 
@@ -102,14 +102,10 @@ class DefaultBackupExecutor(object):
         subprocess.check_call(shlex.split(command))
 
 
-def perform_backup(manager, executor=None):
+def perform_backup(manager, executor):
     """
     Perform actual backup. Relies on a backup manager for information retrieving and backup performing.
     """
-
-    # Use default backup executor if none given
-    if executor is None:
-        executor = DefaultBackupExecutor()
 
     tasks = manager.upcoming_tasks
 

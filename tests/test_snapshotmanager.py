@@ -182,3 +182,9 @@ def test_create_from_config():
     assert manager.weekly_first == '/rsnapshot/minimal/config/root/weekly.0'
     assert manager.weekly_last == '/rsnapshot/minimal/config/root/weekly.6'
     assert manager.monthly_first == '/rsnapshot/minimal/config/root/monthly.0'
+
+
+def test_create_from_config_faulty():
+    with pytest.raises(ValueError) as excinfo:
+        manager = DefaultSnapshotManager.create_from_rsnapshot_conf('tests/rsnapshot-minimal-faulty.conf')
+    assert 'interval' in str(excinfo.value)

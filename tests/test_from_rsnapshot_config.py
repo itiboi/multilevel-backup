@@ -23,3 +23,10 @@ def test_intervals():
 
     minimal_config = open('tests/rsnapshot-minimal.conf').read()
     assert intervals_from_rsnapshot_config(minimal_config) == {'daily': 6, 'weekly': 7, 'monthly': 11}
+
+
+def test_no_intervals_given():
+    # Simulating faulty config with spaces
+    with pytest.raises(ValueError) as excinfo:
+        intervals_from_rsnapshot_config('retain  daily  9')
+    assert 'backup intervals' in str(excinfo.value)
