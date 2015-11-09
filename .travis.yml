@@ -6,9 +6,7 @@ python:
 
 install:
   - pip install -e .
-  - pip install pytest-mock
-  - pip install pytest-cov
-  - pip install coveralls
+  - pip install -r dev_requirements.txt
 
 script: py.test --cov multilevelbackup --cov-report term-missing -v tests/
 
