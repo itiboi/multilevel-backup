@@ -17,7 +17,20 @@ invocation, it takes care about performing
 
 This way, you never have to think about when to call a higher level backup just because you missed a backup.
 
-Note: At the moment only a backup setup with the levels daily, weekly and monthly are supported.
+#### Important: Current setup limitation
+
+At the moment only a backup setup with the intervals daily, weekly and monthly is supported. So your rsnapshot.conf file 
+should contain something like this:
+
+```
+retain		daily	7   # Will be performed after 1 day difference
+retain		weekly	4   # Will be performed after 7 days difference
+retain		monthly	3   # Will be performed after 28 days difference
+```
+
+The interval count can differ, multilevel-backup will parse them. All difference days are referring to date difference,
+so if a daily backup took place on `05.11.2015 20:00`, a second one will be performed on `06.11.2015 15:00`, although the
+actual difference is less than 24 hours.
 
 ### Requirements
 
@@ -50,7 +63,7 @@ $ multilevel-backup -c path/to/rsnapshot/config
 
 and relax.
 
-If you want to execute backups automatically, just create a cron job with this call to invoke it daily (or hourly, just
+If you want to execute backups automatically, just create a cron job with this call to invoke it daily (or different, just
 as you setup requires) and multilevel-backup cares about the rest.
 
 To do a dry run, just add  ```-d``` to the call. It prints all calls that would be invoked. 
