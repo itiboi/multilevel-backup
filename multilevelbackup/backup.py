@@ -4,8 +4,8 @@ from datetime import date, timedelta
 import subprocess
 import shlex
 
-from .helpers import folder_time, level_backup_needed, \
-    intervals_from_rsnapshot_config, backup_root_from_rsnapshot_config
+from .helpers import folder_time, level_backup_needed
+from .config import intervals_from_config, backup_root_from_config
 
 
 class DefaultSnapshotManager(object):
@@ -27,8 +27,8 @@ class DefaultSnapshotManager(object):
     def create_from_rsnapshot_conf(conf_file):
         config = open(conf_file, 'r').read()
 
-        backup_root = backup_root_from_rsnapshot_config(config)
-        intervals = intervals_from_rsnapshot_config(config)
+        backup_root = backup_root_from_config(config)
+        intervals = intervals_from_config(config)
 
         if 'daily' not in intervals or 'weekly' not in intervals:
             raise ValueError('No \'daily\' or \'weekly\' interval in rsnapshot config found')
