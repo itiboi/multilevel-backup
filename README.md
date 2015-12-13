@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/itiboi/multilevel-backup.svg?branch=master)](https://travis-ci.org/itiboi/multilevel-backup) [![Coverage Status](https://coveralls.io/repos/itiboi/multilevel-backup/badge.svg?branch=master&service=github)](https://coveralls.io/github/itiboi/multilevel-backup?branch=master)
 
-Simplifying the management of a multilevel backup structure with rsnapshot especially for not always-on devices.
-Since rsnapshot takes only care about the actual backup process and leaves the handling and timing of multiple backup
-level to the user. For simple setups, this issue can be easily solved with cron jobs, but notably with not always-on devices
+Simplifies the management of a multilevel backup structure with rsnapshot especially for not always-on devices.
+Since rsnapshot takes only care about the actual backup process, the handling and timing of multiple backup level is
+left to the user. For simple setups, this issue can be easily solved with cron jobs, but notably with not always-on devices
 the manual management can easily result in irreversible mistakes. 
 
 ### What does it do?
