@@ -1,11 +1,11 @@
 # multilevel-backup
 
-[![Build Status](https://travis-ci.org/itiboi/multilevel-backup.svg?branch=master)](https://travis-ci.org/itiboi/multilevel-backup) [![Coverage Status](https://coveralls.io/repos/itiboi/multilevel-backup/badge.svg?branch=master&service=github)](https://coveralls.io/github/itiboi/multilevel-backup?branch=master)
+[![Build Status](https://travis-ci.org/tbolender/multilevel-backup.svg?branch=master)](https://travis-ci.org/tbolender/multilevel-backup) [![Coverage Status](https://coveralls.io/repos/tbolender/multilevel-backup/badge.svg?branch=master&service=github)](https://coveralls.io/github/tbolender/multilevel-backup?branch=master)
 
 Simplifies the management of a multilevel backup structure with rsnapshot especially for not always-on devices.
 Since rsnapshot takes only care about the actual backup process, the handling and timing of multiple backup level is
 left to the user. For simple setups, this issue can be easily solved with cron jobs, but notably with not always-on devices
-the manual management can easily result in irreversible mistakes. 
+the manual management can easily result in irreversible mistakes.
 
 ### What does it do?
 
@@ -19,7 +19,7 @@ This way, you never have to think about when to call a higher level backup just 
 
 #### Important: Current setup limitation
 
-At the moment only a backup setup with the intervals daily, weekly and monthly is supported. So your rsnapshot.conf file 
+At the moment only a backup setup with the intervals daily, weekly and monthly is supported. So your rsnapshot.conf file
 should contain something like this:
 
 ```
@@ -66,12 +66,12 @@ and relax.
 If you want to execute backups automatically, just create a cron job with this call to invoke it daily (or different, just
 as you setup requires) and multilevel-backup cares about the rest.
 
-To do a dry run, just add  ```-d``` to the call. It prints all calls that would be invoked. 
+To do a dry run, just add  ```-d``` to the call. It prints all calls that would be invoked.
 
 ### Help? Want feature?
 
-If you encounter any problems, do not hesitate to create an [issue](https://github.com/itiboi/multilevel-backup/issues).
-If you want to help, just [fork](https://github.com/itiboi/multilevel-backup/fork). Any help is wanted!
+If you encounter any problems, do not hesitate to create an [issue](https://github.com/tbolender/multilevel-backup/issues).
+If you want to help, just [fork](https://github.com/tbolender/multilevel-backup/fork). Any help is wanted!
 
 ### License
 
